@@ -56,7 +56,7 @@
 function plotName(name) {
 	
 	var http = new XMLHttpRequest();
-    http.open('HEAD', "names/" + name.charAt(0) + "/" + name + ".txt", false);
+    http.open("HEAD", "names/" + name.charAt(0) + "/" + name + ".txt", false);
     http.send();
     if (http.status == 404) {
     	window.alert("Sorry, \"" + name + "\" is not in the baby name database.");
@@ -176,16 +176,6 @@ else {
 document.getElementById("download_url").href = "names/" + name.charAt(0) + "/" + name + ".txt";
 
 plotName(name);
-
-function downloadData() {
-	var name = "Randal";
-
-	if (window.location.href.indexOf("?BabyName=") > 0) {
-		name = toTitleCase(window.location.href.split("?BabyName=")[1]);
-	}
-	
-	window.open("names/" + name.charAt(0) + "/" + name + ".txt");
-}
 </script>
 
 </body>
