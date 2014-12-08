@@ -127,7 +127,7 @@ function plotName(name) {
 		  .attr("y", 6)
 		  .attr("dy", ".71em")
 		  .style("text-anchor", "end")
-		  .text("# babies given name");
+		  .text("Fraction of babies given name");
 
 	  var city = svg.selectAll(".city")
 		  .data(names)
@@ -148,10 +148,14 @@ function plotName(name) {
 	});
 }
 
+function toTitleCase(str) {
+    return str.replace(/\w\S*/g, function(txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
+}
+
 var name = "Randy";
 
 if (window.location.href.indexOf("?BabyName=") > 0) {
-	name = window.location.href.split("?BabyName=")[1];
+	name = toTitleCase(window.location.href.split("?BabyName=")[1]);
 }
 
 plotName(name);
