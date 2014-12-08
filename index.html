@@ -1,12 +1,8 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>U.S. Baby Name Explorer</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
 <style>
-
-body {
-  font: 12px sans-serif;
-}
-
 .axis path,
 .axis line {
   fill: none;
@@ -20,71 +16,82 @@ body {
 
 .line {
   fill: none;
-  stroke: steelblue;
-  stroke-width: 2.5px;
+  stroke-width: 4px;
 }
 
 </style>
 <body>
 
 <center>
-<h1>U.S. Baby Name Explorer</h1>
 <br />
 
 <div id="chart"></div>
+
+<p>The <strong><font color="#CC6699">pink</font></strong> line shows the percentage for baby girls; the <strong><font color="#008AB8">blue</font></strong> line shows the percentage for baby boys.</p>
 
 <form action="index.html" method="get">
 	<input type="text" id="BabyName" name="BabyName"></input>
 	<input type="submit" value="Explore">
 </form>
 
-<br /><br />
+<br />
 
-Code and analysis by <a href="http://www.randalolson.com/">Randy Olson</a>
-<br /><br />
-Data from the <a href="http://www.ssa.gov/oact/babynames/limits.html">Social Security Administration</a>
-<br /><br />
+<p><a href="" target="_blank" id="download_url">Download the data</a> for the current chart.</p>
 
+<p>Records prior to 1940 are <a href="http://www.prooffreader.com/2014/08/sex-ratio-is-clearest-indicator-of-bias.html">estimates</a> and should be taken with a grain of salt.</p>
+
+<p>Records after 1985 are based on Social Security records and are quite reliable.</p>
+
+<table width="720px">
+<tr>
+<td align="left" width="33%">Code and analysis by <strong><a href="http://www.randalolson.com/">Randy Olson</a></strong></td>
+<td align="center" width="33%"><a href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img src="CC.png" /></a></td>
+<td align="right" width="33%">Data from <strong><a href="http://www.ssa.gov/oact/babynames/limits.html">SSA.gov</a></strong></td>
+</tr>
+</table>
 </center>
 
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
-
-var margin = {top: 20, right: 80, bottom: 30, left: 50},
-    width = 600,
-    height = 400;
-
-var parseDate = d3.time.format("%Y").parse;
-
-var x = d3.time.scale()
-    .range([0, width]);
-
-var y = d3.scale.linear()
-    .range([height, 0]);
-
-var color = d3.scale.category10();
-
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom");
-
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left");
-
-var line = d3.svg.line()
-    .interpolate("basis")
-    .x(function(d) { return x(d.year); })
-    .y(function(d) { return y(d.count); });
-
 function plotName(name) {
 	
 	var http = new XMLHttpRequest();
     http.open('HEAD', "names/" + name.charAt(0) + "/" + name + ".txt", false);
     http.send();
     if (http.status == 404) {
-    	window.alert("Sorry, " + name + " is not in the baby name database.");
+    	window.alert("Sorry, \"" + name + "\" is not in the baby name database.");
+    	window.location.replace("index.html");
     }
+    
+    var margin = {top: 40, right: 20, bottom: 30, left: 100},
+    width = 600,
+    height = 400;
+
+	var parseDate = d3.time.format("%Y").parse;
+
+	var x = d3.time.scale()
+		.range([0, width]);
+
+	var y = d3.scale.linear()
+		.range([height, 0]);
+
+	var color = d3.scale.ordinal().range(["#CC6699", "#008AB8"]);//.scale.category10();
+
+	var xAxis = d3.svg.axis()
+		.scale(x)
+		.orient("bottom");
+
+	var formatPercent = d3.format(".4%");
+
+	var yAxis = d3.svg.axis()
+		.scale(y)
+		.orient("left")
+		.tickFormat(formatPercent);
+
+	var line = d3.svg.line()
+		.interpolate("basis")
+		.x(function(d) { return x(d.year); })
+		.y(function(d) { return y(d.count); });
 
 	var svg = d3.select("#chart").append("svg")
 		.attr("width", width + margin.left + margin.right)
@@ -124,27 +131,30 @@ function plotName(name) {
 		  .call(yAxis)
 		.append("text")
 		  .attr("transform", "rotate(-90)")
-		  .attr("y", 6)
-		  .attr("dy", ".71em")
+		  /*.attr("y", -6)
+		  .attr("dy", ".71em")*/
+		  .attr("y", -100)
+       	  .attr("x", -125)
+       	  .attr("dy", "1em")
 		  .style("text-anchor", "end")
-		  .text("Fraction of babies given name");
+		  .text("% of all babies given name");
 
-	  var city = svg.selectAll(".city")
+	  var name_obj = svg.selectAll(".name")
 		  .data(names)
 		.enter().append("g")
-		  .attr("class", "city");
+		  .attr("class", "name");
 
-	  city.append("path")
+	  name_obj.append("path")
 		  .attr("class", "line")
 		  .attr("d", function(d) { return line(d.values); })
 		  .style("stroke", function(d) { return color(d.name); });
-
-	  city.append("text")
-		  .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
-		  .attr("transform", function(d) { return "translate(" + x(d.value.year) + "," + y(d.value.count) + ")"; })
-		  .attr("x", 3)
-		  .attr("dy", ".35em")
-		  .text(function(d) { return d.name; });
+		  
+	  svg.append("text")
+	  	.attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")
+        .style("font-size", "24px")
+        .text("Popularity of the name \"" + name + "\" in the U.S.");
 	});
 }
 
@@ -152,13 +162,25 @@ function toTitleCase(str) {
     return str.replace(/\w\S*/g, function(txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
 }
 
-var name = "Randy";
+var name = "Randal";
 
 if (window.location.href.indexOf("?BabyName=") > 0) {
 	name = toTitleCase(window.location.href.split("?BabyName=")[1]);
 }
 
+document.getElementById("download_url").href = "names/" + name.charAt(0) + "/" + name + ".txt";
+
 plotName(name);
+
+function downloadData() {
+	var name = "Randal";
+
+	if (window.location.href.indexOf("?BabyName=") > 0) {
+		name = toTitleCase(window.location.href.split("?BabyName=")[1]);
+	}
+	
+	window.open("names/" + name.charAt(0) + "/" + name + ".txt");
+}
 </script>
 
 </body>
